@@ -19,6 +19,10 @@ class Vision:
 
     
     def find(self, haystack_img, needle_img, threshold=0.5, max_results=10):
+        print('finding nemo ')
+        # save the haystack and needle images to disk so we can review it
+        # cv.imwrite('found.jpg', haystack_img)
+        # cv.imwrite('found2.jpg', needle_img)
          # load the image we're trying to match
         # https://docs.opencv.org/4.2.0/d4/da8/group__imgcodecs.html
         # needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
@@ -26,13 +30,15 @@ class Vision:
         # Save the dimensions of the needle image
         needle_w = needle_img.shape[1]
         needle_h = needle_img.shape[0]
+        print('needle_w: ', needle_w)
+        print('needle_h: ', needle_h)
         # run the OpenCV algorithm
         result = cv.matchTemplate(haystack_img, needle_img, self.method)
 
         # Get the all the positions from the match result that exceed our threshold
         locations = np.where(result >= threshold)
         locations = list(zip(*locations[::-1]))
-        #print(locations)
+        print(locations)
 
         # if we found no results, return now. this reshape of the empty array allows us to 
         # concatenate together results without causing an error

@@ -76,5 +76,6 @@ class MssWindowCapture:
             screenshot = self.get_screenshot()
             # lock the thread while updating the results
             self.lock.acquire()
+            # print("updating screenshot")
             self.screenshot = screenshot
             self.lock.release()    
