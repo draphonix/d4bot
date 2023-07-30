@@ -24,40 +24,48 @@ bot = DiabloBot((wincap.offset_x, wincap.offset_y), (wincap.w, wincap.h), vision
 hsv_filter = HsvFilter(0, 203, 37, 8, 255, 255, 0, 0, 0, 0)
 wincap.start()
 bot.start()
+try:           
+    while(True):
+        # if we don't have a screenshot yet, don't run the code below this point yet
+        if wincap.screenshot is None:
+            continue
+        
+        if TEST_MODE:
+            output_image = vision.apply_hsv_filter(wincap.screenshot)
+            cv.imshow('Matches', output_image)
+        else:
+            # pre-process the image
+            processed_image = vision.apply_hsv_filter(wincap.screenshot, hsv_filter)
+            bot.update_screenshot(processed_image)
+            # bot is in idle mode when it first starts up
+            # if bot.state == BotState.IDLE:
+            #     # if we've been in idle mode long enough, start initializing
+            #     if time() - bot.timestamp > bot.INITIALIZING_SECONDS:
+            #         bot.state = BotState.INITIALIZING
+            if DEBUG:
+                # if bot.debugPoint is None:
+                #     continue
+                # rectangles = vision.find(processed_image, cv.imread('./images/mob.jpg', cv.IMREAD_UNCHANGED), 0.56)
+                # output_image = vision.draw_rectangles(wincap.screenshot, rectangles)
+                raw = vision.apply_hsv_filter(wincap.screenshot)
+                # cv.imshow('Matches', output_image)
+                cv.imshow('Raw', raw)
 
-while(True):
-    # if we don't have a screenshot yet, don't run the code below this point yet
-    if wincap.screenshot is None:
-        continue
-    
-    if TEST_MODE:
-        output_image = vision.apply_hsv_filter(wincap.screenshot)
-        cv.imshow('Matches', output_image)
-    else:
-        # pre-process the image
-        processed_image = vision.apply_hsv_filter(wincap.screenshot, hsv_filter)
-        bot.update_screenshot(processed_image)
-
-        # bot is in idle mode when it first starts up
-        if bot.state == BotState.IDLE:
-            # if we've been in idle mode long enough, start initializing
-            if time() - bot.timestamp > bot.INITIALIZING_SECONDS:
-                bot.state = BotState.INITIALIZING
-
-    if DEBUG:
-        # draw the detection results onto the original image
-        detection_image = vision.apply_hsv_filter(wincap.screenshot, hsv_filter)
-        # display the images
-        cv.imshow('Matches', detection_image)
-
-    # press 'q' with the output window focused to exit.
-    # waits 1 ms every loop to process key presses
-    key = cv.waitKey(1)
-    if key == ord('q'):
-        wincap.stop()
-        # detector.stop()
-        bot.stop()
-        cv.destroyAllWindows()
-        break
+            
+        
+        # press 'q' with the output window focused to exit.
+        # waits 1 ms every loop to process key presses
+        key = cv.waitKey(1)
+        if key == ord('='):
+            wincap.stop()
+            # detector.stop()
+            bot.stop()
+            cv.destroyAllWindows()
+            break
+except KeyboardInterrupt:
+    wincap.stop()
+    # detector.stop()
+    bot.stop()
+    cv.destroyAllWindows()
 
 print('Done.')

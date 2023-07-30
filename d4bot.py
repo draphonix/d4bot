@@ -18,7 +18,7 @@ class BotState:
 class DiabloBot:
     # constants
     INITIALIZING_SECONDS = 6
-    MATCH_THRESHOLD = 0.8
+    MATCH_THRESHOLD = 0.56
     IGNORE_RADIUS = 130
     # threading properties
     stopped = True
@@ -40,6 +40,8 @@ class DiabloBot:
     broken_gear = None
     vision = None
     capture = None
+
+    debugPoint = None
 
     def __init__(self, window_offset, window_size, vision):
         # create a thread lock object
@@ -89,12 +91,13 @@ class DiabloBot:
         return points
     
     def find_mobs(self):
-        rectangles = self.vision.find(self.screenshot, cv.imread('./images/mobHealthBar.jpg', cv.IMREAD_UNCHANGED), self.MATCH_THRESHOLD)
-        print("find mobs rectangles: ", rectangles)
+        rectangles = self.vision.find(self.screenshot, cv.imread('./images/mob2.jpg', cv.IMREAD_UNCHANGED), self.MATCH_THRESHOLD)
+        self.debugPoint = rectangles
+        # print("find mobs rectangles: ", rectangles)
         points = self.vision.get_click_points(rectangles)
-        print("find mobs points: ", points)
+        # print("find mobs points: ", points)
         nearest_targets = self.targets_ordered_by_distance(points)
-        print("find mobs nearest_targets: ", nearest_targets)
+        # print("find mobs nearest_targets: ", nearest_targets)
         return nearest_targets
     
     def find_boss(self):
@@ -104,10 +107,16 @@ class DiabloBot:
         return nearest_targets
     
     def perform_actions(self, point):
-        print("perform_actions: ", point)
+        # print("perform_actions: ", point)
+        #  translate the point from window coordinates to screen coordinates
+        point = self.get_screen_position(point)
+        # print("perform_actions: ", point)
         pyautogui.moveTo(point[0], point[1])
         # pyautogui.keyDown('shift')
-        pyautogui.typewrite(['q', 'w', 'e', '3', '3', '2', '2', '2', 'r', '3', '3'], interval=random.uniform(0.1, 0.2))
+        actions = ['w', 'e', 'q', 'r', '2', '3']
+        # random action from actions
+        action = random.randint(0, len(actions) - 1)
+        pyautogui.typewrite([actions[action]], interval=random.uniform(0.1, 0.2))
         # pyautogui.keyUp('shift')
         
     # translate a pixel position on a screenshot image to a pixel position on the screen.
@@ -142,7 +151,7 @@ class DiabloBot:
     def run(self):
         while not self.stopped:
             if self.state == BotState.INITIALIZING:
-                print("Initializing...")
+                # print("Initializing...")
                 # do no bot actions until the startup waiting period is complete
                 if time() > self.timestamp + self.INITIALIZING_SECONDS:
                     # start searching when the waiting period is over
@@ -151,7 +160,7 @@ class DiabloBot:
                     self.lock.release()
 
             elif self.state == BotState.SEARCH_FOR_REVIVE:
-                print("Searching for revive button...")
+                # print("Searching for revive button...")
                 # check the given click point targets, confirm a limestone deposit,
                 # then click it.
                 points = self.find_revive_button()
@@ -171,7 +180,7 @@ class DiabloBot:
                     self.state = BotState.SEARCH_FOR_BROKEN_GEAR
                     self.lock.release()
             elif self.state == BotState.SEARCH_FOR_BROKEN_GEAR:
-                print("Searching for broken gear...")
+                # print("Searching for broken gear...")
                 # This is the case where you have been death for multiple times and your gear might be broken.
                 # Shouldnt continue fighting, should go back to town
                 points = self.find_broken_gear()
@@ -188,10 +197,10 @@ class DiabloBot:
                     self.state = BotState.IDLE
                     self.lock.release()
             elif self.state == BotState.SEARCH_FOR_MOB:
-                print("Searching for mobs...")
+                # print("Searching for mobs...")
                 self.lock.acquire()
                 points = self.find_mobs()
-                print(points)
+                # print(points)
                 if(len(points) == 0):
                     self.state = BotState.SEARCH_FOR_BOSS
                     self.lock.release()
@@ -200,14 +209,14 @@ class DiabloBot:
                     self.state = BotState.SEARCH_FOR_MOB
                     self.lock.release()
             elif self.state == BotState.SEARCH_FOR_BOSS:
-                print("Searching for boss...")
+                # print("Searching for boss...")
                 self.lock.acquire()
                 points = self.find_boss()
                 if(len(points) == 0):
                     self.state = BotState.SEARCH_FOR_MOB
                     self.lock.release()
                 else:
-                    for point in points:
-                        self.perform_actions(point)
-                    self.state = BotState.SEARCH_FOR_BOSS
+                    # for point in points:
+                        # self.perform_actions(point)
+                    self.state = BotState.SEARCH_FOR_BOSS   
                     self.lock.release()
