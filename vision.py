@@ -59,7 +59,7 @@ class Vision:
         # done. If you put it at 2 then an object needs at least 3 overlapping rectangles to appear
         # in the result. I've set eps to 0.5, which is:
         # "Relative difference between sides of the rectangles to merge them into a group."
-        rectangles, weights = cv.groupRectangles(rectangles, groupThreshold=1, eps=0.5)
+        rectangles, weights = cv.groupRectangles(rectangles, groupThreshold=1, eps=1)
         #print(rectangles)
 
         # for performance reasons, return a limited number of results.

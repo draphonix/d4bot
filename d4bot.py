@@ -40,10 +40,10 @@ class DiabloBot:
     broken_gear = None
     vision = None
     capture = None
-
+    spam = None
     debugPoint = None
 
-    def __init__(self, window_offset, window_size, vision):
+    def __init__(self, window_offset, window_size, vision, spam):
         # create a thread lock object
         self.lock = Lock()
 
@@ -57,7 +57,7 @@ class DiabloBot:
         # pre-load the needle image used to confirm our object detection
         self.revive_button = cv.imread('./images/reviveButton.jpg', cv.IMREAD_UNCHANGED)
         self.broken_gear = cv.imread('./images/brokenGear.jpg', cv.IMREAD_UNCHANGED)
-        self.mob_health_bar = cv.imread('./images/mob.jpg', cv.IMREAD_UNCHANGED)
+        self.mob_health_bar = cv.imread('./images/mob2.jpg', cv.IMREAD_UNCHANGED)
         self.boss_health_bar = cv.imread('./images/bossHealthBar.jpg', cv.IMREAD_UNCHANGED)
 
 
@@ -66,6 +66,7 @@ class DiabloBot:
         self.state = BotState.IDLE
         self.timestamp = time()
         self.vision = vision
+        self.spam = spam
 
     def start(self):
         self.stopped = False
@@ -91,13 +92,13 @@ class DiabloBot:
         return points
     
     def find_mobs(self):
-        rectangles = self.vision.find(self.screenshot, cv.imread('./images/mob2.jpg', cv.IMREAD_UNCHANGED), self.MATCH_THRESHOLD)
+        rectangles = self.vision.find(self.screenshot, self.mob_health_bar, self.MATCH_THRESHOLD)
         self.debugPoint = rectangles
-        # print("find mobs rectangles: ", rectangles)
+        print("find mobs rectangles: ", rectangles)
         points = self.vision.get_click_points(rectangles)
-        # print("find mobs points: ", points)
+        print("find mobs points: ", points)
         nearest_targets = self.targets_ordered_by_distance(points)
-        # print("find mobs nearest_targets: ", nearest_targets)
+        print("find mobs nearest_targets: ", nearest_targets)
         return nearest_targets
     
     def find_boss(self):
@@ -112,12 +113,7 @@ class DiabloBot:
         point = self.get_screen_position(point)
         # print("perform_actions: ", point)
         pyautogui.moveTo(point[0], point[1])
-        # pyautogui.keyDown('shift')
-        actions = ['w', 'e', 'q', 'r', '2', '3']
-        # random action from actions
-        action = random.randint(0, len(actions) - 1)
-        pyautogui.typewrite([actions[action]], interval=random.uniform(0.1, 0.2))
-        # pyautogui.keyUp('shift')
+        self.spam.found = True
         
     # translate a pixel position on a screenshot image to a pixel position on the screen.
     # pos = (x, y)
