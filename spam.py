@@ -26,15 +26,17 @@ class Spam:
         while not self.stopped:
             if self.found:
                 self.lock.acquire()
+                win32gui.ShowWindow(self.hwnd, win32con.SW_SHOW)
+                win32gui.SetForegroundWindow(self.hwnd)
                 # print('Executing spam')
-                pyautogui.press('shift')
+                pyautogui.keyDown('shift')
                 # win32gui.SetWindowPos(self.hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, 0)
                 pyautogui.typewrite(['q', 'w'], interval=random.uniform(0.1, 0.2))
                 pyautogui.typewrite(['2', '2', '2'], interval=random.uniform(0.1, 0.2))
                 pyautogui.typewrite(['e', '3', '3'], interval=random.uniform(0.1, 0.2))
                 time.sleep(0.2)
                 pyautogui.typewrite(['r', '3', '3'], interval=random.uniform(0.1, 0.2))
-                pyautogui.press('shift')
+                pyautogui.keyUp('shift')
                 self.found = False
                 time.sleep(1)
                 # print('Finished spam')
